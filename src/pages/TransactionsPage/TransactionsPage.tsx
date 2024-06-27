@@ -9,6 +9,7 @@ import { FilterType } from '../../types/FilterType.type';
 import DeleteTransactionModal from '../../components/DeleteTransactionModal/DeleteTransactionModal';
 import { ArcElement, Chart, Tooltip } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
+import { addTransaction, getTransactions, initDB } from '../../utils/db';
 
 const TransactionsPage: React.FC = () => {
   Chart.register(ArcElement, Tooltip);
@@ -22,6 +23,7 @@ const TransactionsPage: React.FC = () => {
   const [selectedColumns, setSelectedColumns] = useState<string[]>(['Id', 'Status', 'Type', 'Client Name', 'Amount', 'Date']);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingTransactionId, setDeletingTransactionId] = useState<string | null>(null);
+  const [chartData, setChartData] = useState<any>({ labels: [], datasets: [] });
 
   const columns = ['Id', 'Status', 'Type', 'Client Name', 'Amount', 'Date'];
 
@@ -135,11 +137,12 @@ const TransactionsPage: React.FC = () => {
     );
   };
 
-
-  const [chartData, setChartData] = useState({ labels: [], datasets: [] });
-
   useEffect(() => {
-    const transactionsByStatus = {};
+    const transactionsByStatus: any = {
+      pending: 0,
+      completed: 0,
+      cancelled: 0
+    };
     filteredTransactions.forEach(transaction => {
       if (!transactionsByStatus[transaction.status]) {
         transactionsByStatus[transaction.status] = 0;
@@ -150,10 +153,10 @@ const TransactionsPage: React.FC = () => {
     const totalTransactions = filteredTransactions.length;
 
     const labels = Object.keys(transactionsByStatus);
-    const data = labels.map(status => {
-      const count = transactionsByStatus[status];
+    const data: Array<string> = labels.map(status => {
+      const count: number = transactionsByStatus[status];
       const percentage = (count / totalTransactions) * 100;
-      return percentage.toFixed(2); // Округлення до двох знаків після коми
+      return percentage.toFixed(2);
     });
 
     const backgroundColor = [
@@ -181,7 +184,7 @@ const TransactionsPage: React.FC = () => {
         plugins: {
           tooltip: {
             callbacks: {
-              label: function(tooltipItem) {
+              label: function(tooltipItem: any) {
                 return tooltipItem.label + ': ' + tooltipItem.raw.toFixed(2) + '%';
               }
             }
@@ -194,6 +197,31 @@ const TransactionsPage: React.FC = () => {
       }
     });
   }, [filteredTransactions]);
+
+  useEffect(() => {
+    const loadDatabase = async () => {
+      await initDB();
+
+      const initialTransactions = [
+        { id: "1", clientName: 'Client A', amount: 100, status: 'completed', type: 'type1', date: '2024-01-01' },
+        { id: "2", clientName: 'Client B', amount: 200, status: 'pending', type: 'type2', date: '2024-02-01' },
+        { id: "3", clientName: 'Client C', amount: 300, status: 'failed', type: 'type3', date: '2024-03-01' },
+      ];
+
+      const dbTransactions = await getTransactions();
+      if (dbTransactions.length === 0) {
+        for (const transaction of initialTransactions) {
+          await addTransaction(transaction);
+        }
+      }
+
+      const transactionsFromDB: Transaction[] = await getTransactions();
+      
+      setFilteredTransactions(transactionsFromDB);
+    };
+
+    loadDatabase();
+  }, []);
 
   return (
     <Box display="flex" justifyContent="space-around" mt={4}>
