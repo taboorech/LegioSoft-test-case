@@ -1,30 +1,74 @@
-import React from 'react';
-import { Box, Select } from '@chakra-ui/react';
+import React, { useState } from 'react';
+import { Box, Button, Input, Select } from '@chakra-ui/react';
+import { FilterType } from '../../types/FilterType.type';
 
 interface FilterProps {
-  onFilterChange: (filters: { status: string; type: string }) => void;
+  onFilterChange: (filters: FilterType) => void;
 }
 
 const Filter: React.FC<FilterProps> = ({ onFilterChange }) => {
-  const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    onFilterChange({ status: event.target.value, type: document.getElementById('type-filter')?.value || '' });
-  };
+  const [status, setStatus] = useState('');
+  const [type, setType] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [minAmount, setMinAmount] = useState('');
+  const [maxAmount, setMaxAmount] = useState('');
+  const [searchByValue, setSearchByValue] = useState('');
 
-  const handleTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    onFilterChange({ status: document.getElementById('status-filter')?.value || '', type: event.target.value });
+  const handleFilter = () => {
+    onFilterChange({
+      status,
+      type,
+      startDate,
+      endDate,
+      minAmount,
+      maxAmount,
+      searchByValue
+    });
   };
 
   return (
-    <Box display="flex" gap={2}>
-      <Select id="status-filter" placeholder="Status" onChange={handleStatusChange}>
+    <Box display="flex" gap={2} flexDirection="column">
+      <Select placeholder="Status" value={status} onChange={(e) => setStatus(e.target.value)}>
         <option value="Pending">Pending</option>
         <option value="Completed">Completed</option>
         <option value="Cancelled">Cancelled</option>
       </Select>
-      <Select id="type-filter" placeholder="Type" onChange={handleTypeChange}>
+      <Select placeholder="Type" value={type} onChange={(e) => setType(e.target.value)}>
         <option value="Refill">Refill</option>
         <option value="Withdrawal">Withdrawal</option>
       </Select>
+      <Input
+        type="date"
+        placeholder="Start Date"
+        value={startDate}
+        onChange={(e) => setStartDate(e.target.value)}
+      />
+      <Input
+        type="date"
+        placeholder="End Date"
+        value={endDate}
+        onChange={(e) => setEndDate(e.target.value)}
+      />
+      <Input
+        type="number"
+        placeholder="Min Amount"
+        value={minAmount}
+        onChange={(e) => setMinAmount(e.target.value)}
+      />
+      <Input
+        type="number"
+        placeholder="Max Amount"
+        value={maxAmount}
+        onChange={(e) => setMaxAmount(e.target.value)}
+      />
+      <Input
+        type="text"
+        placeholder="Search by value"
+        value={searchByValue}
+        onChange={(e) => setSearchByValue(e.target.value)}
+      />
+      <Button onClick={handleFilter}>Apply Filters</Button>
     </Box>
   );
 };

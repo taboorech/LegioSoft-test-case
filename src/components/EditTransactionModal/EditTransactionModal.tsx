@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Button, FormControl, FormLabel, Input, FormErrorMessage, Select } from '@chakra-ui/react';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { Transaction } from '../../types/Transaction';
+import { Transaction } from '../../types/Transaction.type';
 
 interface EditTransactionModalProps {
   transaction: Transaction;

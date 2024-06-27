@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useRef } from 'react';
 import { Button, Input } from '@chakra-ui/react';
 import { parseCSV } from '../../utils/parse-csv';
-import { Transaction } from '../../types/Transaction';
+import { Transaction } from '../../types/Transaction.type';
 
 interface ImportButtonProps {
   mr: string;

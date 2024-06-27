@@ -1,4 +1,4 @@
-import { Transaction } from '../types/Transaction';
+import { Transaction } from '../types/Transaction.type';
 
 export const parseCSV = (csv: string): Transaction[] => {
   const lines = csv.split('\n');

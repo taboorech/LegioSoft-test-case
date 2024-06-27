@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Box, Button, Table, Thead, Tbody, Tr, Th, Td, Checkbox, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@chakra-ui/react';
 import ImportButton from '../../components/ImportButton/ImportButton';
-// import ExportButton from '../../components/ExportButton/ExportButton';
 import EditTransactionModal from '../../components/EditTransactionModal/EditTransactionModal';
-import { Transaction } from '../../types/Transaction';
+import { Transaction } from '../../types/Transaction.type';
 import Filter from '../../components/Filter/Filter';
 import Pagination from '../../components/Pagination/Pagination';
+import { FilterType } from '../../types/FilterType.type';
 
 const TransactionsPage: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -13,11 +13,11 @@ const TransactionsPage: React.FC = () => {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const transactionsPerPage = 10;
-  const [filters, setFilters] = useState<{ status: string; type: string }>({ status: '', type: '' });
+  const [filters, setFilters] = useState<FilterType>({ status: '', type: '', minAmount: '', maxAmount: '', startDate: '', endDate: '', searchByValue: '' });
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [selectedColumns, setSelectedColumns] = useState<string[]>(['Id', 'Status', 'Type', 'Client Name', 'Amount']);
+  const [selectedColumns, setSelectedColumns] = useState<string[]>(['Id', 'Status', 'Type', 'Client Name', 'Amount', 'Date']);
 
-  const columns = ['Id', 'Status', 'Type', 'Client Name', 'Amount'];
+  const columns = ['Id', 'Status', 'Type', 'Client Name', 'Amount', 'Date'];
 
   const handleImport = (importedTransactions: Transaction[]) => {
     setTransactions(importedTransactions);
@@ -26,7 +26,7 @@ const TransactionsPage: React.FC = () => {
 
   const handleExport = () => {
     const csvRows = [
-      selectedColumns, // headers
+      selectedColumns,
       ...filteredTransactions.map(transaction => selectedColumns.map(col => transaction[col.split(' ').map((word, index) => index === 0 ? word.toLowerCase() : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join('') as keyof Transaction]))
     ];
     const csvContent = "data:text/csv;charset=utf-8," + csvRows.map(e => e.join(",")).join("\n");
@@ -55,19 +55,48 @@ const TransactionsPage: React.FC = () => {
     applyFilters(updatedTransactions, filters);
   };
 
-  const applyFilters = (transactions: Transaction[], filters: { status: string; type: string }) => {
+  const applyFilters = (transactions: Transaction[], filters: FilterType) => {
     let filtered = transactions;
+    
     if (filters.status) {
       filtered = filtered.filter(transaction => transaction.status === filters.status);
     }
+    
     if (filters.type) {
       filtered = filtered.filter(transaction => transaction.type === filters.type);
     }
+    
+    if (filters.startDate) {
+      filtered = filtered.filter(transaction => new Date(transaction.date) >= new Date(filters.startDate));
+    }
+    
+    if (filters.endDate) {
+      filtered = filtered.filter(transaction => new Date(transaction.date) <= new Date(filters.endDate));
+    }
+    
+    if (filters.minAmount) {
+      filtered = filtered.filter(transaction => transaction.amount >= parseFloat(filters.minAmount));
+    }
+    
+    if (filters.maxAmount) {
+      filtered = filtered.filter(transaction => transaction.amount <= parseFloat(filters.maxAmount));
+    }
+
+    if(filters.searchByValue) {
+      filtered = filtered.filter(transaction => 
+        transaction.id === filters.searchByValue ||
+        transaction.status === filters.status ||
+        transaction.type === filters.type ||
+        transaction.amount.toString() === filters.searchByValue ||
+        new Date(transaction.date) === new Date(filters.searchByValue)
+      )
+    }
+  
     setFilteredTransactions(filtered);
-    setCurrentPage(1); // Повертаємось на першу сторінку після зміни фільтрів
+    setCurrentPage(1);
   };
 
-  const handleFilterChange = (newFilters: { status: string; type: string }) => {
+  const handleFilterChange = (newFilters: FilterType) => {
     setFilters(newFilters);
     applyFilters(transactions, newFilters);
   };
@@ -109,6 +138,7 @@ const TransactionsPage: React.FC = () => {
             <Th>Type</Th>
             <Th>Client name</Th>
             <Th>Amount</Th>
+            <Th>Date</Th>
             <Th>Action</Th>
           </Tr>
         </Thead>
@@ -120,6 +150,7 @@ const TransactionsPage: React.FC = () => {
               <Td>{transaction.type}</Td>
               <Td>{transaction.clientName}</Td>
               <Td>{transaction.amount}</Td>
+              <Td>{transaction.date}</Td>
               <Td>
                 <Button mr={2} colorScheme="blue" onClick={() => handleEdit(transaction)}>Edit</Button>
                 <Button colorScheme="red" onClick={() => handleDelete(transaction.id)}>Delete</Button>
