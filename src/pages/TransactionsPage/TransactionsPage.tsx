@@ -6,6 +6,7 @@ import { Transaction } from '../../types/Transaction.type';
 import Filter from '../../components/Filter/Filter';
 import Pagination from '../../components/Pagination/Pagination';
 import { FilterType } from '../../types/FilterType.type';
+import DeleteTransactionModal from '../../components/DeleteTransactionModal/DeleteTransactionModal';
 
 const TransactionsPage: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -16,6 +17,8 @@ const TransactionsPage: React.FC = () => {
   const [filters, setFilters] = useState<FilterType>({ status: '', type: '', minAmount: '', maxAmount: '', startDate: '', endDate: '', searchByValue: '' });
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [selectedColumns, setSelectedColumns] = useState<string[]>(['Id', 'Status', 'Type', 'Client Name', 'Amount', 'Date']);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletingTransactionId, setDeletingTransactionId] = useState<string | null>(null);
 
   const columns = ['Id', 'Status', 'Type', 'Client Name', 'Amount', 'Date'];
 
@@ -44,9 +47,18 @@ const TransactionsPage: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    const updatedTransactions = transactions.filter(t => t.id !== id);
-    setTransactions(updatedTransactions);
-    applyFilters(updatedTransactions, filters);
+    setDeletingTransactionId(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (deletingTransactionId) {
+      const updatedTransactions = transactions.filter(t => t.id !== deletingTransactionId);
+      setTransactions(updatedTransactions);
+      applyFilters(updatedTransactions, filters);
+      setDeletingTransactionId(null);
+      setIsDeleteModalOpen(false);
+    }
   };
 
   const handleUpdateTransaction = (updatedTransaction: Transaction) => {
@@ -109,7 +121,7 @@ const TransactionsPage: React.FC = () => {
     if (pageNumber < 1 || pageNumber > Math.ceil(filteredTransactions.length / transactionsPerPage)) {
       return;
     }
-    return setCurrentPage(pageNumber);
+    setCurrentPage(pageNumber);
   };
 
   const toggleColumn = (column: string) => {
@@ -174,6 +186,12 @@ const TransactionsPage: React.FC = () => {
           onUpdate={handleUpdateTransaction}
         />
       )}
+
+      <DeleteTransactionModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onDelete={handleConfirmDelete}
+      />
 
       <Modal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)}>
         <ModalOverlay />
