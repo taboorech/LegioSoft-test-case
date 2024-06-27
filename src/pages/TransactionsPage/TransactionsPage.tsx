@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button, Table, Thead, Tbody, Tr, Th, Td, Checkbox, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@chakra-ui/react';
 import ImportButton from '../../components/ImportButton/ImportButton';
 import EditTransactionModal from '../../components/EditTransactionModal/EditTransactionModal';
@@ -7,8 +7,11 @@ import Filter from '../../components/Filter/Filter';
 import Pagination from '../../components/Pagination/Pagination';
 import { FilterType } from '../../types/FilterType.type';
 import DeleteTransactionModal from '../../components/DeleteTransactionModal/DeleteTransactionModal';
+import { ArcElement, Chart, Tooltip } from 'chart.js';
+import { Pie } from 'react-chartjs-2';
 
 const TransactionsPage: React.FC = () => {
+  Chart.register(ArcElement, Tooltip);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
@@ -132,94 +135,162 @@ const TransactionsPage: React.FC = () => {
     );
   };
 
+
+  const [chartData, setChartData] = useState({ labels: [], datasets: [] });
+
+  useEffect(() => {
+    const transactionsByStatus = {};
+    filteredTransactions.forEach(transaction => {
+      if (!transactionsByStatus[transaction.status]) {
+        transactionsByStatus[transaction.status] = 0;
+      }
+      transactionsByStatus[transaction.status] += 1;
+    });
+
+    const totalTransactions = filteredTransactions.length;
+
+    const labels = Object.keys(transactionsByStatus);
+    const data = labels.map(status => {
+      const count = transactionsByStatus[status];
+      const percentage = (count / totalTransactions) * 100;
+      return percentage.toFixed(2); // Округлення до двох знаків після коми
+    });
+
+    const backgroundColor = [
+      'rgba(255, 99, 132, 0.2)',
+      'rgba(128, 99, 255, 0.2)',
+      'rgba(75, 192, 192, 0.2)',
+    ]
+
+    const borderColor = [
+      'rgba(255, 99, 132, 1)',
+      'rgba(128, 99, 255, 1)',
+      'rgba(75, 192, 192, 1)',
+    ]
+    
+    setChartData({
+      labels: labels,
+      datasets: [{
+        label: 'Percentage of Transactions per Status',
+        data: data,
+        backgroundColor: backgroundColor,
+        borderColor: borderColor,
+        borderWidth: 1,
+      }],
+      options: {
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(tooltipItem) {
+                return tooltipItem.label + ': ' + tooltipItem.raw.toFixed(2) + '%';
+              }
+            }
+          },
+          legend: {
+            display: true,
+            position: 'bottom',
+          }
+        }
+      }
+    });
+  }, [filteredTransactions]);
+
   return (
-    <Box p={4}>
-      <Box mb={4} display="flex" justifyContent="space-between">
-        <Filter onFilterChange={handleFilterChange} />
-        <Box>
-          <ImportButton mr={"2"} onImport={handleImport} />
-          <Button onClick={() => setIsExportModalOpen(true)}>Export</Button>
+    <Box display="flex" justifyContent="space-around" mt={4}>
+      <Box>
+        <h2>Transaction Volume by Status</h2>
+        <Box mt={2}>
+          <Pie data={chartData}/>
         </Box>
-      </Box>
+      </Box> 
+      <Box p={4}>
+        <Box mb={4} display="flex" justifyContent="space-between">
+          <Filter onFilterChange={handleFilterChange} />
+          <Box>
+            <ImportButton mr={"2"} onImport={handleImport} />
+            <Button onClick={() => setIsExportModalOpen(true)}>Export</Button>
+          </Box>
+        </Box>
 
-      <Table variant="simple">
-        <Thead>
-          <Tr>
-            <Th>Id</Th>
-            <Th>Status</Th>
-            <Th>Type</Th>
-            <Th>Client name</Th>
-            <Th>Amount</Th>
-            <Th>Date</Th>
-            <Th>Action</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {currentTransactions.map(transaction => (
-            <Tr key={transaction.id}>
-              <Td>{transaction.id}</Td>
-              <Td>{transaction.status}</Td>
-              <Td>{transaction.type}</Td>
-              <Td>{transaction.clientName}</Td>
-              <Td>{transaction.amount}</Td>
-              <Td>{transaction.date}</Td>
-              <Td>
-                <Button mr={2} colorScheme="blue" onClick={() => handleEdit(transaction)}>Edit</Button>
-                <Button colorScheme="red" onClick={() => handleDelete(transaction.id)}>Delete</Button>
-              </Td>
+        <Table variant="simple">
+          <Thead>
+            <Tr>
+              <Th>Id</Th>
+              <Th>Status</Th>
+              <Th>Type</Th>
+              <Th>Client name</Th>
+              <Th>Amount</Th>
+              <Th>Date</Th>
+              <Th>Action</Th>
             </Tr>
-          ))}
-        </Tbody>
-      </Table>
-
-      <Pagination
-        totalTransactions={filteredTransactions.length}
-        transactionsPerPage={transactionsPerPage}
-        currentPage={currentPage}
-        onPageChange={handlePageChange}
-      />
-
-      {selectedTransaction && (
-        <EditTransactionModal
-          transaction={selectedTransaction}
-          onClose={() => setSelectedTransaction(null)}
-          onUpdate={handleUpdateTransaction}
-        />
-      )}
-
-      <DeleteTransactionModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onDelete={handleConfirmDelete}
-      />
-
-      <Modal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Select Columns to Export</ModalHeader>
-          <ModalBody>
-            {columns.map(column => (
-              <Box
-                key={column}
-                mb={2}
-              >
-                <Checkbox
-                  isChecked={selectedColumns.includes(column)}
-                  onChange={() => toggleColumn(column)}
-                >
-                  {column}
-                </Checkbox>
-              </Box>
+          </Thead>
+          <Tbody>
+            {currentTransactions.map(transaction => (
+              <Tr key={transaction.id}>
+                <Td>{transaction.id}</Td>
+                <Td>{transaction.status}</Td>
+                <Td>{transaction.type}</Td>
+                <Td>{transaction.clientName}</Td>
+                <Td>{transaction.amount}</Td>
+                <Td>{transaction.date}</Td>
+                <Td>
+                  <Button mr={2} colorScheme="blue" onClick={() => handleEdit(transaction)}>Edit</Button>
+                  <Button colorScheme="red" onClick={() => handleDelete(transaction.id)}>Delete</Button>
+                </Td>
+              </Tr>
             ))}
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="blue" onClick={() => {
-              handleExport();
-              setIsExportModalOpen(false);
-            }}>Export</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+          </Tbody>
+        </Table>
+
+        <Pagination
+          totalTransactions={filteredTransactions.length}
+          transactionsPerPage={transactionsPerPage}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
+        />
+
+        {selectedTransaction && (
+          <EditTransactionModal
+            transaction={selectedTransaction}
+            onClose={() => setSelectedTransaction(null)}
+            onUpdate={handleUpdateTransaction}
+          />
+        )}
+
+        <DeleteTransactionModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onDelete={handleConfirmDelete}
+        />
+
+        <Modal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Select Columns to Export</ModalHeader>
+            <ModalBody>
+              {columns.map(column => (
+                <Box
+                  key={column}
+                  mb={2}
+                >
+                  <Checkbox
+                    isChecked={selectedColumns.includes(column)}
+                    onChange={() => toggleColumn(column)}
+                  >
+                    {column}
+                  </Checkbox>
+                </Box>
+              ))}
+            </ModalBody>
+            <ModalFooter>
+              <Button colorScheme="blue" onClick={() => {
+                handleExport();
+                setIsExportModalOpen(false);
+              }}>Export</Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      </Box>
     </Box>
   );
 };
