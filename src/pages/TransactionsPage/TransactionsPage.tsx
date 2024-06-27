@@ -8,8 +8,8 @@ import Pagination from '../../components/Pagination/Pagination';
 import { FilterType } from '../../types/FilterType.type';
 import DeleteTransactionModal from '../../components/DeleteTransactionModal/DeleteTransactionModal';
 import { ArcElement, Chart, Tooltip } from 'chart.js';
-import { Pie } from 'react-chartjs-2';
 import { addTransaction, getTransactions, initDB } from '../../utils/db';
+import PieChart from '../../components/PieChart/PieChart';
 
 const TransactionsPage: React.FC = () => {
   Chart.register(ArcElement, Tooltip);
@@ -23,7 +23,6 @@ const TransactionsPage: React.FC = () => {
   const [selectedColumns, setSelectedColumns] = useState<string[]>(['Id', 'Status', 'Type', 'Client Name', 'Amount', 'Date']);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingTransactionId, setDeletingTransactionId] = useState<string | null>(null);
-  const [chartData, setChartData] = useState<any>({ labels: [], datasets: [] });
 
   const columns = ['Id', 'Status', 'Type', 'Client Name', 'Amount', 'Date'];
 
@@ -138,67 +137,6 @@ const TransactionsPage: React.FC = () => {
   };
 
   useEffect(() => {
-    const transactionsByStatus: any = {
-      pending: 0,
-      completed: 0,
-      cancelled: 0
-    };
-    filteredTransactions.forEach(transaction => {
-      if (!transactionsByStatus[transaction.status]) {
-        transactionsByStatus[transaction.status] = 0;
-      }
-      transactionsByStatus[transaction.status] += 1;
-    });
-
-    const totalTransactions = filteredTransactions.length;
-
-    const labels = Object.keys(transactionsByStatus);
-    const data: Array<string> = labels.map(status => {
-      const count: number = transactionsByStatus[status];
-      const percentage = (count / totalTransactions) * 100;
-      return percentage.toFixed(2);
-    });
-
-    const backgroundColor = [
-      'rgba(255, 99, 132, 0.2)',
-      'rgba(128, 99, 255, 0.2)',
-      'rgba(75, 192, 192, 0.2)',
-    ]
-
-    const borderColor = [
-      'rgba(255, 99, 132, 1)',
-      'rgba(128, 99, 255, 1)',
-      'rgba(75, 192, 192, 1)',
-    ]
-    
-    setChartData({
-      labels: labels,
-      datasets: [{
-        label: 'Percentage of Transactions per Status',
-        data: data,
-        backgroundColor: backgroundColor,
-        borderColor: borderColor,
-        borderWidth: 1,
-      }],
-      options: {
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function(tooltipItem: any) {
-                return tooltipItem.label + ': ' + tooltipItem.raw.toFixed(2) + '%';
-              }
-            }
-          },
-          legend: {
-            display: true,
-            position: 'bottom',
-          }
-        }
-      }
-    });
-  }, [filteredTransactions]);
-
-  useEffect(() => {
     const loadDatabase = async () => {
       await initDB();
 
@@ -225,12 +163,7 @@ const TransactionsPage: React.FC = () => {
 
   return (
     <Box display="flex" justifyContent="space-around" mt={4}>
-      <Box>
-        <h2>Transaction Volume by Status</h2>
-        <Box mt={2}>
-          <Pie data={chartData}/>
-        </Box>
-      </Box> 
+      <PieChart filteredTransactions={filteredTransactions} />
       <Box p={4}>
         <Box mb={4} display="flex" justifyContent="space-between">
           <Filter onFilterChange={handleFilterChange} />
@@ -260,7 +193,7 @@ const TransactionsPage: React.FC = () => {
                 <Td>{transaction.type}</Td>
                 <Td>{transaction.clientName}</Td>
                 <Td>{transaction.amount}</Td>
-                <Td>{transaction.date}</Td>
+                <Td>{new Intl.DateTimeFormat('ua').format(new Date(transaction.date))}</Td>
                 <Td>
                   <Button mr={2} colorScheme="blue" onClick={() => handleEdit(transaction)}>Edit</Button>
                   <Button colorScheme="red" onClick={() => handleDelete(transaction.id)}>Delete</Button>
