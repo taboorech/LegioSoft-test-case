@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { Box, Button, Input, Select } from '@chakra-ui/react';
 import { FilterType } from '../../types/FilterType.type';
 
+// Props for the filter component
 interface FilterProps {
-  onFilterChange: (filters: FilterType) => void;
+  onFilterChange: (filters: FilterType) => void; // Function called when filters change
 }
 
+// Filter component for applying various filters
 const Filter: React.FC<FilterProps> = ({ onFilterChange }) => {
+  // State variables for filter criteria
   const [status, setStatus] = useState('');
   const [type, setType] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -15,7 +18,9 @@ const Filter: React.FC<FilterProps> = ({ onFilterChange }) => {
   const [maxAmount, setMaxAmount] = useState('');
   const [searchByValue, setSearchByValue] = useState('');
 
+  // Handler for applying filters
   const handleFilter = () => {
+    // Call the parent component's function with current filter values
     onFilterChange({
       status,
       type,

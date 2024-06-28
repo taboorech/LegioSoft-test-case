@@ -3,12 +3,14 @@ import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody,
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { Transaction } from '../../types/Transaction.type';
 
+// Props for the edit transaction modal component
 interface EditTransactionModalProps {
-  transaction: Transaction;
-  onClose: () => void;
-  onUpdate: (updatedTransaction: Transaction) => void;
+  transaction: Transaction; // The transaction object to edit
+  onClose: () => void; // Function to close the modal
+  onUpdate: (updatedTransaction: Transaction) => void; // Function called when updating the transaction
 }
 
+// Modal component for editing a transaction
 const EditTransactionModal: React.FC<EditTransactionModalProps> = ({ transaction, onClose, onUpdate }) => {
   const { register, handleSubmit, formState: { errors } } = useForm<Transaction>({
     defaultValues: {
@@ -19,10 +21,11 @@ const EditTransactionModal: React.FC<EditTransactionModalProps> = ({ transaction
     },
   });
 
+  // Form submission handler for editing a transaction
   const onSubmit: SubmitHandler<Transaction> = (data) => {
-    const updatedTransaction = { ...transaction, ...data };
-    onUpdate(updatedTransaction);
-    onClose();
+    const updatedTransaction = { ...transaction, ...data }; // Merge initial transaction with updated data
+    onUpdate(updatedTransaction); // Call function to save the updated transaction
+    onClose(); // Close the modal after saving
   };
 
   return (

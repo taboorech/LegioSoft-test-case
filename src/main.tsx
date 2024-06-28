@@ -5,10 +5,11 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { ChakraProvider } from '@chakra-ui/react';
 
+// Create a new instance of QueryClient for managing queries and caching
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
+      refetchOnWindowFocus: false, // Disable automatic refetching on window focus for all queries
     },
   },
 });

@@ -1,11 +1,13 @@
 import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from "@chakra-ui/react";
 
+// Props for the delete transaction modal component
 interface DeleteTransactionModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onDelete: () => void;
+  isOpen: boolean; // Indicates if the modal is open
+  onClose: () => void; // Function to close the modal
+  onDelete: () => void; // Function called when deletion is confirmed
 }
 
+// Modal component for confirming transaction deletion
 const DeleteTransactionModal: React.FC<DeleteTransactionModalProps> = ({ isOpen, onClose, onDelete }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
