@@ -1,30 +1,62 @@
-# React + TypeScript + Vite
+# Transactions Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is a web-based application for managing financial transactions. It includes functionalities for importing, exporting, filtering, and visualizing transactions. The application is built with React, TypeScript, Chakra UI, IndexedDB, and react-query.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+ * **User Authentication**: Login functionality to secure the application.
+ * **Transactions Management**: Add, edit, delete, filter, and paginate transactions.
+ * **Import/Export**: Import transactions from a CSV file and export transactions to a CSV file.
+ * **Charts: Visualize** transaction data with pie charts.
+ * **Client-side Storage**: Uses IndexedDB for storing transaction data locally.
 
-## Expanding the ESLint configuration
+## Tech Stack
+ * **React**: A JavaScript library for building user interfaces.
+ * **TypeScript**: A strongly typed programming language that builds on JavaScript.
+ * **Chakra UI**: A simple, modular, and accessible component library for React.
+ * **IndexedDB**: A low-level API for storing large amounts of structured data.
+ * **React Query**: Data-fetching library for React to manage server state.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Getting Started
 
-- Configure the top-level `parserOptions` property like this:
+### Prerequisites
+ * Node.js and npm installed on your machine.
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+## Installation
+1. Clone the repository:
+  ```
+  git clone https://github.com/your-username/transactions-management-system.git
+  ```
+2. Navigate to the project directory:
+  ```
+  cd LegioSoft-test-case
+  ```
+3. Install dependencies:
+  ```
+  npm install
+  ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+## Running the Application
+
+1. Start the development server:
+  ```
+  npm run dev
+  ```
+2. Open your browser and go to http://localhost:5173.
+
+## Usage
+### Authentication
+ * Login with your username and password to access the application.
+ * The token is stored in local storage to maintain the session.
+### Managing Transactions
+ * **Import**: Click on the import button and select a CSV file to import transactions.
+ * **Export**: Click on the export button to export the filtered transactions to a CSV file.
+ * **Edit/Delete**: Use the edit and delete buttons to modify or remove transactions.
+ * **Filter**: Use the filter component to filter transactions based on various criteria.
+ * **Pagination**: Navigate through pages of transactions using the pagination component.
+ * **Visualization**: View the pie chart to get an overview of transaction statuses.
+### IndexedDB Integration
+ * The application uses IndexedDB for client-side storage of transactions.
+ * **initDB**: Initializes the database.
+ * **addTransaction**: Adds a transaction to the database.
+ * **getTransactions**: Retrieves transactions from the database.
