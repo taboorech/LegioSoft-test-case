@@ -184,6 +184,7 @@ const TransactionsPage: React.FC = () => {
 
       const transactionsFromDB: Transaction[] = await getTransactions(); // Retrieves transactions from indexedDB
 
+      setTransactions(transactionsFromDB);
       setFilteredTransactions(transactionsFromDB);
     };
 
